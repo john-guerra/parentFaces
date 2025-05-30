@@ -2,6 +2,7 @@ import { formatSimilarityScore, getSimilarityDescription } from '../utils/helper
 import VisualExplanation from './VisualExplanation';
 import SimilarityChart from './SimilarityChart';
 import ValidationResults from './ValidationResults';
+import PairwiseMatrix from './PairwiseMatrix';
 import './ResemblanceResults.css';
 
 const ResemblanceResults = ({ results, image, onReset, validationData, photoCount = 1 }) => {
@@ -50,6 +51,29 @@ const ResemblanceResults = ({ results, image, onReset, validationData, photoCoun
     
     return canvas.toDataURL();
   };
+
+  // Collect all faces for the pairwise matrix
+  const getAllFaces = () => {
+    const allFaces = [];
+    
+    // Add all parents from the first result (they should be the same across all results)
+    if (results.length > 0 && results[0].parentSimilarities) {
+      results[0].parentSimilarities.forEach(ps => {
+        if (!allFaces.find(face => face.role === ps.parent.role)) {
+          allFaces.push(ps.parent);
+        }
+      });
+    }
+    
+    // Add all children
+    results.forEach(result => {
+      allFaces.push(result.childFace);
+    });
+    
+    return allFaces;
+  };
+
+  const allFaces = getAllFaces();
 
   return (
     <div className="resemblance-results">
@@ -150,6 +174,9 @@ const ResemblanceResults = ({ results, image, onReset, validationData, photoCoun
 
       {/* Similarity Chart Component */}
       <SimilarityChart results={results} image={image} />
+
+      {/* Pairwise Matrix Component */}
+      <PairwiseMatrix allFaces={allFaces} image={image} />
 
       {/* Validation Results Component (for multiple photos) */}
       {photoCount > 1 && (
