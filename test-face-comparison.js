@@ -6,7 +6,7 @@
  */
 
 import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
+import { dirname } from 'path';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -188,12 +188,12 @@ runner.test('Face descriptors - similar faces should have high similarity', asyn
 // Test 6: Different faces should have lower similarity
 runner.test('Face descriptors - different faces should have lower similarity', async () => {
   const face1 = {
-    descriptor: new Float32Array([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8]),
+    descriptor: new Float32Array([1.0, 0.8, 0.6, 0.4, 0.2, 0.0, -0.2, -0.4]),
     box: { x: 0, y: 0, width: 100, height: 100 }
   };
   
   const face2 = {
-    descriptor: new Float32Array([0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1]),
+    descriptor: new Float32Array([-0.9, -0.7, -0.5, -0.3, -0.1, 0.1, 0.3, 0.5]),
     box: { x: 0, y: 0, width: 100, height: 100 }
   };
 

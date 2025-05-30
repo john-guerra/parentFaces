@@ -2,8 +2,7 @@ import { useState, useEffect } from 'react';
 import PhotoUpload from './components/PhotoUpload';
 import FaceLabeling from './components/FaceLabeling';
 import ResemblanceResults from './components/ResemblanceResults';
-import { loadModels, detectFaces } from './services/faceDetection';
-import { analyzeFamilyResemblance, initializeEmbeddingModel } from './services/faceComparison';
+import { loadModels, detectFaces, analyzeFamilyResemblance, initializeEmbeddingModel } from './services/lazyServices';
 import { loadImageFromFile } from './utils/helpers';
 import './App.css'
 
