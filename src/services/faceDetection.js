@@ -33,18 +33,24 @@ export const loadModels = async () => {
 /**
  * Detect faces in an image
  * @param {HTMLImageElement} image - The image to detect faces in
+ * @param {number} threshold - Detection confidence threshold (0.1 to 0.9)
  * @returns {Array} Array of face detections with landmarks and descriptors
  */
-export const detectFaces = async (image) => {
+export const detectFaces = async (image, threshold = 0.5) => {
   if (!modelsLoaded) {
     await loadModels();
   }
   
   try {
     const detections = await faceapi
-      .detectAllFaces(image, new faceapi.TinyFaceDetectorOptions())
+      .detectAllFaces(image, new faceapi.TinyFaceDetectorOptions({
+        inputSize: 416,
+        scoreThreshold: threshold
+      }))
       .withFaceLandmarks()
       .withFaceDescriptors();
+    
+    console.log(`Detected ${detections.length} faces with threshold ${threshold}`);
     
     return detections.map((detection, index) => ({
       id: `face_${index}`,

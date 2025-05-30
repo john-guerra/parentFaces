@@ -52,12 +52,26 @@ function App() {
       const image = await loadImageFromFile(file);
       setUploadedImage(image);
       
-      // Detect faces
-      console.log('Detecting faces...');
-      const faces = await detectFaces(image);
+      // Detect faces with default threshold
+      await detectFacesWithThreshold(image, 0.5);
+      
+    } catch (error) {
+      console.error('Error processing image:', error);
+      setError('Error processing image: ' + error.message);
+      setIsProcessing(false);
+    }
+  };
+
+  const detectFacesWithThreshold = async (image, threshold) => {
+    setIsProcessing(true);
+    setError('');
+    
+    try {
+      console.log(`Detecting faces with threshold ${threshold}...`);
+      const faces = await detectFaces(image, threshold);
       
       if (faces.length === 0) {
-        setError('No faces detected in the image. Please try a different photo with clear faces.');
+        setError('No faces detected in the image. Try adjusting the detection sensitivity or use a different photo with clearer faces.');
         setIsProcessing(false);
         return;
       }
@@ -73,10 +87,16 @@ function App() {
       setCurrentStage(AppStage.LABELING);
       
     } catch (error) {
-      console.error('Error processing image:', error);
-      setError('Error processing image: ' + error.message);
+      console.error('Error detecting faces:', error);
+      setError('Error detecting faces: ' + error.message);
     } finally {
       setIsProcessing(false);
+    }
+  };
+
+  const handleRedetectFaces = async (threshold) => {
+    if (uploadedImage) {
+      await detectFacesWithThreshold(uploadedImage, threshold);
     }
   };
 
@@ -167,6 +187,7 @@ function App() {
                 image={uploadedImage}
                 detectedFaces={detectedFaces}
                 onLabelsComplete={handleLabelsComplete}
+                onRedetectFaces={handleRedetectFaces}
               />
             )}
 

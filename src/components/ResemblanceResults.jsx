@@ -1,4 +1,6 @@
 import { formatSimilarityScore, getSimilarityDescription } from '../utils/helpers';
+import VisualExplanation from './VisualExplanation';
+import SimilarityChart from './SimilarityChart';
 import './ResemblanceResults.css';
 
 const ResemblanceResults = ({ results, image, onReset }) => {
@@ -142,6 +144,12 @@ const ResemblanceResults = ({ results, image, onReset }) => {
         </button>
       </div>
 
+      {/* Visual Explanation Component */}
+      <VisualExplanation />
+
+      {/* Similarity Chart Component */}
+      <SimilarityChart results={results} image={image} />
+
       <div className="methodology">
         <details>
           <summary>How does this work?</summary>
@@ -150,13 +158,29 @@ const ResemblanceResults = ({ results, image, onReset }) => {
               Our family resemblance analysis uses advanced computer vision and machine learning:
             </p>
             <ul>
-              <li><strong>Face Detection:</strong> We identify and locate faces in your photo using face-api.js</li>
-              <li><strong>Feature Extraction:</strong> Each face is analyzed for key features like eye shape, nose structure, and facial geometry</li>
-              <li><strong>Similarity Comparison:</strong> We compare facial features between children and parents using mathematical similarity algorithms</li>
-              <li><strong>Confidence Scoring:</strong> Results are scored based on multiple facial characteristics</li>
+              <li><strong>Face Detection:</strong> We identify and locate faces in your photo using face-api.js neural networks</li>
+              <li><strong>Feature Extraction:</strong> Each face is converted into a 128-dimensional numerical vector (descriptor) that captures unique facial characteristics like eye shape, nose structure, jawline, and overall facial geometry</li>
+              <li><strong>Similarity Comparison:</strong> We use cosine similarity calculation in high-dimensional space to measure how similar two faces are:
+                <ul className="sub-list">
+                  <li>Calculate the cosine of the angle between two 128-dimensional face vectors</li>
+                  <li>Formula: cosine = (A·B) / (||A|| × ||B||) where A·B is dot product and ||A|| is vector magnitude</li>
+                  <li>Convert cosine similarity (-1 to 1) to percentage: similarity = (cosine + 1) / 2</li>
+                  <li>Cosine similarity is more robust to lighting variations than Euclidean distance</li>
+                </ul>
+              </li>
+              <li><strong>Confidence Scoring:</strong> Results are ranked by similarity percentage, with the highest-scoring parent identified as the best match</li>
+              <li><strong>Privacy:</strong> All processing happens in your browser - no photos are uploaded to servers</li>
             </ul>
+            <div className="technical-details">
+              <h4>Technical Details:</h4>
+              <p><strong>Algorithm:</strong> Cosine similarity in 128-dimensional feature space</p>
+              <p><strong>Models:</strong> Pre-trained face-api.js neural networks for feature extraction</p>
+              <p><strong>Similarity Range:</strong> 0% (no resemblance) to 100% (identical features)</p>
+              <p><strong>Typical Family Scores:</strong> 35-75% similarity between related family members</p>
+              <p><strong>Advantage:</strong> Cosine similarity is more robust to lighting and normalization differences</p>
+            </div>
             <p className="disclaimer">
-              <em>Note: This is for entertainment purposes. Actual genetic resemblance involves many factors not captured in photos.</em>
+              <em>Note: This is for entertainment purposes. Actual genetic resemblance involves many factors not captured in photos, including 3D facial structure, expressions, aging, and non-visible genetic traits.</em>
             </p>
           </div>
         </details>

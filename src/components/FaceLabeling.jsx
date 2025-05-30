@@ -7,15 +7,74 @@ const roleOptions = [
   { value: 'child', label: 'Child', color: '#ffc107' }
 ];
 
-const FaceLabeling = ({ image, detectedFaces, onLabelsComplete }) => {
+const FaceLabeling = ({ image, detectedFaces, onLabelsComplete, onRedetectFaces }) => {
   const canvasRef = useRef(null);
   const [labels, setLabels] = useState({});
   const [currentFaceIndex, setCurrentFaceIndex] = useState(0);
+  const [threshold, setThreshold] = useState(0.5);
+  const [isRedetecting, setIsRedetecting] = useState(false);
 
   const getRoleColor = useCallback((role) => {
     const roleOption = roleOptions.find(r => r.value === role);
     return roleOption ? roleOption.color : '#ffffff';
   }, []);
+
+  // Create face thumbnail
+  const createFaceThumbnail = useCallback((face) => {
+    if (!image || !face.box) return null;
+    
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const size = 80;
+    
+    canvas.width = size;
+    canvas.height = size;
+    
+    // Calculate aspect ratio and crop dimensions
+    const { box } = face;
+    const aspectRatio = box.width / box.height;
+    let cropWidth = box.width;
+    let cropHeight = box.height;
+    let cropX = box.x;
+    let cropY = box.y;
+    
+    // Make it square by cropping the larger dimension
+    if (aspectRatio > 1) {
+      cropWidth = box.height;
+      cropX = box.x + (box.width - box.height) / 2;
+    } else {
+      cropHeight = box.width;
+      cropY = box.y + (box.height - box.width) / 2;
+    }
+    
+    // Ensure crop dimensions are within image bounds
+    cropX = Math.max(0, Math.min(cropX, image.width - cropWidth));
+    cropY = Math.max(0, Math.min(cropY, image.height - cropHeight));
+    cropWidth = Math.min(cropWidth, image.width - cropX);
+    cropHeight = Math.min(cropHeight, image.height - cropY);
+    
+    ctx.drawImage(
+      image,
+      cropX, cropY, cropWidth, cropHeight,
+      0, 0, size, size
+    );
+    
+    return canvas.toDataURL();
+  }, [image]);
+
+  const handleRedetect = async () => {
+    if (!onRedetectFaces) return;
+    
+    setIsRedetecting(true);
+    try {
+      await onRedetectFaces(threshold);
+      setLabels({}); // Reset labels when redetecting
+      setCurrentFaceIndex(0);
+    } catch (error) {
+      console.error('Error redetecting faces:', error);
+    }
+    setIsRedetecting(false);
+  };
 
   useEffect(() => {
     const drawFacesOnCanvas = () => {
@@ -159,10 +218,43 @@ const FaceLabeling = ({ image, detectedFaces, onLabelsComplete }) => {
         </div>
         
         <div className="labeling-controls">
+          <div className="threshold-controls">
+            <label htmlFor="threshold-slider">
+              Face Detection Sensitivity: {(threshold * 100).toFixed(0)}%
+            </label>
+            <input
+              id="threshold-slider"
+              type="range"
+              min="0.1"
+              max="0.9"
+              step="0.05"
+              value={threshold}
+              onChange={(e) => setThreshold(parseFloat(e.target.value))}
+              className="threshold-slider"
+            />
+            <div className="threshold-value">
+              Lower = More faces detected (may include false positives)
+            </div>
+            <button 
+              onClick={handleRedetect}
+              disabled={isRedetecting}
+              className="redetect-btn"
+            >
+              {isRedetecting ? 'Detecting...' : 'Re-detect Faces'}
+            </button>
+          </div>
+
           <div className="current-face">
             <h4>
               Labeling Face {currentFaceIndex + 1} of {detectedFaces.length}
             </h4>
+            {detectedFaces[currentFaceIndex] && (
+              <img 
+                src={createFaceThumbnail(detectedFaces[currentFaceIndex])} 
+                alt={`Face ${currentFaceIndex + 1}`}
+                className="face-thumbnail"
+              />
+            )}
             <div className="role-buttons">
               {roleOptions.map(role => (
                 <button

@@ -289,6 +289,44 @@
   line-height: 1.5;
 }
 
+.sub-list {
+  margin: 0.5rem 0 0 0;
+  padding-left: 1rem;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.sub-list li {
+  margin: 0.25rem 0;
+  font-family: 'Courier New', monospace;
+}
+
+.technical-details {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 1.5rem 0;
+}
+
+.technical-details h4 {
+  margin: 0 0 0.75rem 0;
+  color: #007bff;
+  font-size: 1rem;
+}
+
+.technical-details p {
+  margin: 0.5rem 0;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.technical-details strong {
+  color: #333;
+  min-width: 120px;
+  display: inline-block;
+}
+
 .disclaimer {
   background: #fff3cd;
   border: 1px solid #ffeaa7;

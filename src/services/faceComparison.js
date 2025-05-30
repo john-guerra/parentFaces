@@ -84,26 +84,32 @@ export const cosineSimilarity = (vecA, vecB) => {
 export const comparefaces = async (face1, face2) => {
   const results = {
     faceApiSimilarity: 0,
+    euclideanSimilarity: 0,
     combinedScore: 0
   };
   
   // Face-api.js descriptor similarity
   if (face1.descriptor && face2.descriptor) {
-    // Calculate Euclidean distance between descriptors
+    // Calculate cosine similarity between descriptors (preferred method)
+    // Cosine similarity measures the angle between vectors, making it more robust
+    // to variations in lighting and normalization differences
+    const cosineScore = cosineSimilarity(Array.from(face1.descriptor), Array.from(face2.descriptor));
+    
+    // Convert cosine similarity (-1 to 1) to 0-1 scale
+    // Cosine similarity of 1 = identical, 0 = orthogonal, -1 = opposite
+    results.faceApiSimilarity = Math.max(0, (cosineScore + 1) / 2);
+    
+    // Also calculate Euclidean distance for comparison
     let distance = 0;
     for (let i = 0; i < face1.descriptor.length; i++) {
       const diff = face1.descriptor[i] - face2.descriptor[i];
       distance += diff * diff;
     }
     distance = Math.sqrt(distance);
-    
-    // Convert distance to similarity (0-1 scale)
-    // Face-api.js descriptors typically have distances between 0-1.2
-    // Lower distance = higher similarity
-    results.faceApiSimilarity = Math.max(0, 1 - (distance / 1.2));
+    results.euclideanSimilarity = Math.max(0, 1 - (distance / 1.2));
   }
   
-  // For now, combined score is the same as face-api similarity
+  // Use cosine similarity as the primary score
   results.combinedScore = results.faceApiSimilarity;
   
   return results;

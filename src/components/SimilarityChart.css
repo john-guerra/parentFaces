@@ -1,0 +1,277 @@
+.similarity-chart {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  margin: 24px 0;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.chart-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.chart-header h3 {
+  color: #1e293b;
+  margin: 0 0 8px 0;
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+.chart-header p {
+  color: #64748b;
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.legend {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin-bottom: 24px;
+  padding: 12px;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  color: #475569;
+  font-weight: 500;
+}
+
+.legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+}
+
+.chart-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.comparison-row {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: 10px;
+  padding: 16px;
+  border: 1px solid #e2e8f0;
+  transition: all 0.2s ease;
+}
+
+.comparison-row:hover {
+  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.faces-comparison {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.face-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-width: 80px;
+}
+
+.chart-face-img {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 2px solid #e2e8f0;
+  object-fit: cover;
+  transition: border-color 0.2s ease;
+}
+
+.comparison-row:hover .chart-face-img {
+  border-color: #3b82f6;
+}
+
+.face-label {
+  font-size: 0.8rem;
+  color: #475569;
+  font-weight: 500;
+  text-align: center;
+}
+
+.comparison-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.comparison-type {
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: center;
+  padding: 4px 12px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.similarity-visual {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  max-width: 200px;
+}
+
+.similarity-bar {
+  width: 100%;
+  height: 12px;
+  background: #e2e8f0;
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+}
+
+.similarity-fill {
+  height: 100%;
+  border-radius: 6px;
+  transition: width 0.3s ease;
+  position: relative;
+}
+
+.similarity-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.3) 50%, transparent 100%);
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.similarity-values {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+}
+
+.percentage {
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.decimal {
+  color: #64748b;
+  font-size: 0.8rem;
+}
+
+.chart-summary {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.summary-stats {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  min-width: 120px;
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  color: #64748b;
+  font-weight: 500;
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .similarity-chart {
+    padding: 16px;
+    margin: 16px 0;
+  }
+  
+  .legend {
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+  }
+  
+  .faces-comparison {
+    flex-direction: column;
+    gap: 16px;
+    text-align: center;
+  }
+  
+  .comparison-info {
+    order: 2;
+    width: 100%;
+  }
+  
+  .face-item {
+    min-width: auto;
+  }
+  
+  .chart-face-img {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .summary-stats {
+    gap: 16px;
+  }
+  
+  .stat {
+    min-width: 100px;
+    padding: 10px 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .chart-header h3 {
+    font-size: 1.2rem;
+  }
+  
+  .similarity-visual {
+    max-width: 160px;
+  }
+  
+  .summary-stats {
+    flex-direction: column;
+    align-items: center;
+  }
+}
