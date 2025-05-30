@@ -129,7 +129,10 @@ const PhotoUpload = ({ onImageUpload, onMultipleImagesUpload, isProcessing }) =>
               
               {/* Demo Image Button */}
               <button 
-                onClick={loadDemoImage} 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  loadDemoImage();
+                }} 
                 className="demo-btn"
                 disabled={isProcessing}
                 type="button"
