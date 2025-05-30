@@ -1,0 +1,171 @@
+.face-labeling {
+  margin: 2rem 0;
+  padding: 2rem;
+  background: #f8f9fa;
+  border-radius: 12px;
+}
+
+.face-labeling h3 {
+  margin: 0 0 0.5rem 0;
+  color: #333;
+}
+
+.face-labeling > p {
+  color: #666;
+  margin-bottom: 2rem;
+}
+
+.no-faces {
+  text-align: center;
+  padding: 3rem;
+  color: #666;
+}
+
+.labeling-container {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 2rem;
+  align-items: start;
+}
+
+.canvas-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #fff;
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.face-canvas {
+  max-width: 100%;
+  max-height: 500px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.labeling-controls {
+  background: #fff;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.current-face h4 {
+  margin: 0 0 1rem 0;
+  color: #333;
+  font-size: 1.1rem;
+}
+
+.role-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+}
+
+.role-btn {
+  padding: 0.75rem 1rem;
+  border: 2px solid #ddd;
+  background: #fff;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 600;
+  color: #333;
+  font-size: 1rem;
+  text-align: center;
+}
+
+.role-btn:hover {
+  background: #f8f9fa;
+  border-color: #007bff;
+  color: #007bff;
+}
+
+.role-btn.active {
+  background: #007bff;
+  color: white;
+  border-color: #007bff;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+}
+
+.navigation {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+}
+
+.nav-btn {
+  flex: 1;
+  padding: 0.5rem 1rem;
+  border: 1px solid #ddd;
+  background: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.nav-btn:hover:not(:disabled) {
+  background: #f8f9fa;
+}
+
+.nav-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.progress {
+  margin-bottom: 2rem;
+}
+
+.progress p {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: #e9ecef;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #007bff, #28a745);
+  transition: width 0.3s ease;
+}
+
+.complete-btn {
+  width: 100%;
+  padding: 1rem;
+  background: linear-gradient(135deg, #007bff, #28a745);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.complete-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+}
+
+@media (max-width: 768px) {
+  .labeling-container {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .face-canvas {
+    max-height: 300px;
+  }
+}
