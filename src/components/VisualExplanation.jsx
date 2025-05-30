@@ -6,9 +6,9 @@ const VisualExplanation = () => {
       <h3>🔬 How Face Comparison Works</h3>
       
       <div className="explanation-steps">
-        <div className="step">
-          <div className="step-number">1</div>
-          <div className="step-content">
+        <div className="explanation-step">
+          <div className="explanation-step-number">1</div>
+          <div className="explanation-step-content">
             <h4>Face Detection</h4>
             <p>AI identifies and locates faces in your photo using advanced computer vision</p>
             <div className="step-visual">
@@ -23,9 +23,9 @@ const VisualExplanation = () => {
           </div>
         </div>
 
-        <div className="step">
-          <div className="step-number">2</div>
-          <div className="step-content">
+        <div className="explanation-step">
+          <div className="explanation-step-number">2</div>
+          <div className="explanation-step-content">
             <h4>Feature Extraction</h4>
             <p>Each face is analyzed for key features like eye shape, nose structure, and facial geometry</p>
             <div className="step-visual">
@@ -52,9 +52,9 @@ const VisualExplanation = () => {
           </div>
         </div>
 
-        <div className="step">
-          <div className="step-number">3</div>
-          <div className="step-content">
+        <div className="explanation-step">
+          <div className="explanation-step-number">3</div>
+          <div className="explanation-step-content">
             <h4>Similarity Calculation</h4>
             <p>Mathematical algorithms compare feature vectors to determine facial similarity</p>
             <div className="step-visual">
