@@ -1,9 +1,10 @@
 import { formatSimilarityScore, getSimilarityDescription } from '../utils/helpers';
 import VisualExplanation from './VisualExplanation';
 import SimilarityChart from './SimilarityChart';
+import ValidationResults from './ValidationResults';
 import './ResemblanceResults.css';
 
-const ResemblanceResults = ({ results, image, onReset }) => {
+const ResemblanceResults = ({ results, image, onReset, validationData, photoCount = 1 }) => {
   if (!results || results.length === 0) {
     return (
       <div className="resemblance-results">
@@ -149,6 +150,14 @@ const ResemblanceResults = ({ results, image, onReset }) => {
 
       {/* Similarity Chart Component */}
       <SimilarityChart results={results} image={image} />
+
+      {/* Validation Results Component (for multiple photos) */}
+      {photoCount > 1 && (
+        <ValidationResults 
+          validationData={validationData} 
+          photoCount={photoCount} 
+        />
+      )}
 
       <div className="methodology">
         <details>
