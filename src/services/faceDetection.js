@@ -32,6 +32,7 @@ export const loadModels = async () => {
 
 /**
  * Detect faces in an image
+ * Enhanced version with better error handling and robustness
  * @param {HTMLImageElement} image - The image to detect faces in
  * @param {number} threshold - Detection confidence threshold (0.1 to 0.9)
  * @returns {Array} Array of face detections with landmarks and descriptors
@@ -42,26 +43,64 @@ export const detectFaces = async (image, threshold = 0.5) => {
   }
   
   try {
+    // Enhanced validation
+    if (!image || !image.complete || image.naturalWidth === 0) {
+      throw new Error('Invalid image provided for face detection');
+    }
+    
+    // Clamp threshold to valid range
+    const clampedThreshold = Math.max(0.1, Math.min(0.9, threshold));
+    
+    console.log(`Detecting faces with threshold ${clampedThreshold}...`);
+    
     const detections = await faceapi
       .detectAllFaces(image, new faceapi.TinyFaceDetectorOptions({
         inputSize: 416,
-        scoreThreshold: threshold
+        scoreThreshold: clampedThreshold
       }))
       .withFaceLandmarks()
       .withFaceDescriptors();
     
-    console.log(`Detected ${detections.length} faces with threshold ${threshold}`);
+    console.log(`Detected ${detections.length} faces with threshold ${clampedThreshold}`);
     
-    return detections.map((detection, index) => ({
+    // Enhanced: Filter out detections with invalid descriptors
+    const validDetections = detections.filter(detection => {
+      if (!detection.descriptor) {
+        console.warn('Face detection missing descriptor, skipping');
+        return false;
+      }
+      
+      if (detection.descriptor.length !== 128) {
+        console.warn(`Face descriptor has unexpected length: ${detection.descriptor.length}, skipping`);
+        return false;
+      }
+      
+      // Check for NaN or Infinity values in descriptor
+      const hasInvalidValues = Array.from(detection.descriptor).some(val => 
+        !isFinite(val) || isNaN(val)
+      );
+      
+      if (hasInvalidValues) {
+        console.warn('Face descriptor contains invalid values, skipping');
+        return false;
+      }
+      
+      return true;
+    });
+    
+    console.log(`${validDetections.length} valid face detections after filtering`);
+    
+    return validDetections.map((detection, index) => ({
       id: `face_${index}`,
       box: detection.detection.box,
       landmarks: detection.landmarks,
       descriptor: detection.descriptor,
       confidence: detection.detection.score
     }));
+    
   } catch (error) {
     console.error('Error detecting faces:', error);
-    throw error;
+    throw new Error(`Face detection failed: ${error.message}`);
   }
 };
 

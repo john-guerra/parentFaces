@@ -46,6 +46,7 @@ export const canvasToBase64 = (canvas) => {
 
 /**
  * Calculate cosine similarity between two vectors
+ * Enhanced version with better numerical stability
  * @param {Array} vecA - First vector
  * @param {Array} vecB - Second vector
  * @returns {number} Cosine similarity (-1 to 1)
@@ -55,28 +56,37 @@ export const cosineSimilarity = (vecA, vecB) => {
     throw new Error('Vectors must have the same length');
   }
   
+  // Convert to regular arrays if needed to ensure consistency
+  const arrA = Array.isArray(vecA) ? vecA : Array.from(vecA);
+  const arrB = Array.isArray(vecB) ? vecB : Array.from(vecB);
+  
   let dotProduct = 0;
   let normA = 0;
   let normB = 0;
   
-  for (let i = 0; i < vecA.length; i++) {
-    dotProduct += vecA[i] * vecB[i];
-    normA += vecA[i] * vecA[i];
-    normB += vecB[i] * vecB[i];
+  for (let i = 0; i < arrA.length; i++) {
+    dotProduct += arrA[i] * arrB[i];
+    normA += arrA[i] * arrA[i];
+    normB += arrB[i] * arrB[i];
   }
   
   normA = Math.sqrt(normA);
   normB = Math.sqrt(normB);
   
-  if (normA === 0 || normB === 0) {
+  // Enhanced numerical stability check
+  if (normA < 1e-10 || normB < 1e-10) {
     return 0;
   }
   
-  return dotProduct / (normA * normB);
+  const similarity = dotProduct / (normA * normB);
+  
+  // Clamp to valid range to handle floating point precision issues
+  return Math.max(-1, Math.min(1, similarity));
 };
 
 /**
  * Compare faces using face-api.js descriptors
+ * Enhanced version with improved consistency and error handling
  * @param {Object} face1 - First face object with descriptor and box
  * @param {Object} face2 - Second face object with descriptor and box
  * @returns {Object} Similarity metrics
@@ -88,32 +98,47 @@ export const comparefaces = async (face1, face2) => {
     combinedScore: 0
   };
   
-  // Face-api.js descriptor similarity
-  if (face1.descriptor && face2.descriptor) {
+  // Enhanced validation
+  if (!face1 || !face2) {
+    console.warn('comparefaces: One or both faces are null/undefined');
+    return results;
+  }
+  
+  if (!face1.descriptor || !face2.descriptor) {
+    console.warn('comparefaces: One or both faces missing descriptors');
+    return results;
+  }
+  
+  if (face1.descriptor.length !== face2.descriptor.length) {
+    console.warn('comparefaces: Descriptor length mismatch');
+    return results;
+  }
+  
+  try {
+    // Face-api.js descriptor similarity with enhanced consistency
+    const desc1 = Array.from(face1.descriptor);
+    const desc2 = Array.from(face2.descriptor);
+    
     // Calculate cosine similarity between descriptors
-    const cosineScore = cosineSimilarity(Array.from(face1.descriptor), Array.from(face2.descriptor));
+    const cosineScore = cosineSimilarity(desc1, desc2);
     
-    // For face descriptors, cosine similarity ranges from -1 to 1
-    // We need to map this to a more intuitive 0-1 scale for similarity percentage
-    // However, for face recognition, negative values are rare and indicate very different faces
-    // We'll use a more sophisticated mapping:
-    
+    // Enhanced mapping with better numerical stability
     let normalizedScore;
     if (cosineScore >= 0) {
-      // Positive cosine similarity: map 0-1 to 0-1 with emphasis on higher values
+      // Positive cosine similarity: direct mapping
       normalizedScore = cosineScore;
     } else {
-      // Negative cosine similarity: map to very low similarity (0-0.1)
-      normalizedScore = Math.max(0, 0.1 + (cosineScore * 0.1));
+      // Negative cosine similarity: map to very low similarity
+      normalizedScore = Math.max(0, 0.05 + (cosineScore * 0.05));
     }
     
-    // Ensure the result is within [0, 1] range
+    // Ensure the result is within [0, 1] range with proper clamping
     results.faceApiSimilarity = Math.max(0, Math.min(1, normalizedScore));
     
     // Also calculate Euclidean distance for comparison
     let distance = 0;
-    for (let i = 0; i < face1.descriptor.length; i++) {
-      const diff = face1.descriptor[i] - face2.descriptor[i];
+    for (let i = 0; i < desc1.length; i++) {
+      const diff = desc1[i] - desc2[i];
       distance += diff * diff;
     }
     distance = Math.sqrt(distance);
@@ -121,10 +146,17 @@ export const comparefaces = async (face1, face2) => {
     // For face descriptors, typical distances range from 0 to ~1.2
     // Map this to similarity score (lower distance = higher similarity)
     results.euclideanSimilarity = Math.max(0, Math.min(1, 1 - (distance / 1.2)));
+    
+    // Use cosine similarity as the primary score (it's more robust for face recognition)
+    results.combinedScore = results.faceApiSimilarity;
+    
+  } catch (error) {
+    console.error('Error in comparefaces:', error);
+    // Return zero similarity on error rather than throwing
+    results.faceApiSimilarity = 0;
+    results.euclideanSimilarity = 0;
+    results.combinedScore = 0;
   }
-  
-  // Use cosine similarity as the primary score (it's more robust for face recognition)
-  results.combinedScore = results.faceApiSimilarity;
   
   return results;
 };

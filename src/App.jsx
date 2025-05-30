@@ -106,6 +106,11 @@ function App() {
         return;
       }
       
+      // Enhanced: Handle partial face detection gracefully
+      if (faces.length > 0) {
+        console.log(`Successfully detected ${faces.length} faces. Proceeding to labeling stage.`);
+      }
+      
       console.log(`Detected ${faces.length} faces`);
       setDetectedFaces(faces);
       setCurrentStage(AppStage.LABELING);
@@ -130,6 +135,21 @@ function App() {
     
     try {
       console.log('Analyzing family resemblance...');
+      
+      // Enhanced validation: Check for minimum required faces
+      if (!groupedFaces.parents || groupedFaces.parents.length === 0) {
+        setError('Please label at least one parent before proceeding.');
+        setIsProcessing(false);
+        return;
+      }
+      
+      if (!groupedFaces.children || groupedFaces.children.length === 0) {
+        setError('Please label at least one child before proceeding.');
+        setIsProcessing(false);
+        return;
+      }
+      
+      console.log(`Found ${groupedFaces.parents.length} parents and ${groupedFaces.children.length} children`);
       
       // Analyze resemblance
       const results = await analyzeFamilyResemblance(
