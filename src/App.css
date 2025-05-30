@@ -92,16 +92,16 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
   font-size: 1.1rem;
   transition: all 0.3s ease;
-  border: 2px solid rgba(255, 255, 255, 0.4);
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  text-shadow: none;
 }
 
 .step.active .step-number {
@@ -120,11 +120,11 @@
 }
 
 .step-label {
-  color: white;
+  color: rgba(255, 255, 255, 0.5);
   font-size: 0.95rem;
-  font-weight: 600;
-  opacity: 0.9;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+  font-weight: 500;
+  opacity: 0.7;
+  text-shadow: none;
   text-align: center;
 }
 
@@ -133,6 +133,13 @@
   font-weight: 700;
   color: #ffc107;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+}
+
+.step.completed .step-label {
+  color: white;
+  opacity: 0.9;
+  font-weight: 600;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 .error-banner {

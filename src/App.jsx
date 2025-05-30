@@ -94,25 +94,21 @@ function App() {
       console.log(`Detecting faces with threshold ${threshold}...`);
       const faces = await detectFaces(image, threshold);
       
-      if (faces.length === 0) {
-        setError('No faces detected in the image. Try adjusting the detection sensitivity or use a different photo with clearer faces.');
-        setIsProcessing(false);
-        return;
-      }
-      
-      if (faces.length < 2) {
-        setError('Please upload a photo with at least 2 people (parents and children).');
-        setIsProcessing(false);
-        return;
-      }
-      
-      // Enhanced: Handle partial face detection gracefully
-      if (faces.length > 0) {
-        console.log(`Successfully detected ${faces.length} faces. Proceeding to labeling stage.`);
-      }
-      
       console.log(`Detected ${faces.length} faces`);
       setDetectedFaces(faces);
+      
+      // Always proceed to labeling stage, even with insufficient faces
+      // The user can adjust the threshold in the labeling stage if needed
+      if (faces.length === 0) {
+        setError('No faces detected. Try adjusting the detection sensitivity below to detect faces.');
+      } else if (faces.length < 2) {
+        setError('Only 1 face detected. You need at least 2 people (parents and children). Try adjusting the detection sensitivity.');
+      } else if (faces.length < 3) {
+        setError('Only 2 faces detected. For family comparison, you ideally need at least 3 people. You can proceed or adjust the sensitivity to detect more faces.');
+      } else {
+        console.log(`Successfully detected ${faces.length} faces. Ready for labeling.`);
+      }
+      
       setCurrentStage(AppStage.LABELING);
       
     } catch (error) {

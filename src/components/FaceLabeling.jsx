@@ -13,6 +13,7 @@ const FaceLabeling = ({ image, detectedFaces, onLabelsComplete, onRedetectFaces 
   const [currentFaceIndex, setCurrentFaceIndex] = useState(0);
   const [threshold, setThreshold] = useState(0.5);
   const [isRedetecting, setIsRedetecting] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
 
   const getRoleColor = useCallback((role) => {
     const roleOption = roleOptions.find(r => r.value === role);
@@ -62,18 +63,35 @@ const FaceLabeling = ({ image, detectedFaces, onLabelsComplete, onRedetectFaces 
     return canvas.toDataURL();
   }, [image]);
 
-  const handleRedetect = async () => {
+  const handleRedetect = async (newThreshold = threshold) => {
     if (!onRedetectFaces) return;
     
     setIsRedetecting(true);
     try {
-      await onRedetectFaces(threshold);
+      await onRedetectFaces(newThreshold);
       setLabels({}); // Reset labels when redetecting
       setCurrentFaceIndex(0);
     } catch (error) {
       console.error('Error redetecting faces:', error);
     }
     setIsRedetecting(false);
+  };
+
+  // Handle threshold change with automatic redetection when slider stops
+  const handleThresholdChange = (e) => {
+    const newThreshold = parseFloat(e.target.value);
+    setThreshold(newThreshold);
+  };
+
+  const handleThresholdMouseDown = () => {
+    setIsDragging(true);
+  };
+
+  const handleThresholdMouseUp = async () => {
+    if (isDragging) {
+      setIsDragging(false);
+      await handleRedetect(threshold);
+    }
   };
 
   useEffect(() => {
@@ -229,19 +247,17 @@ const FaceLabeling = ({ image, detectedFaces, onLabelsComplete, onRedetectFaces 
               max="0.9"
               step="0.05"
               value={threshold}
-              onChange={(e) => setThreshold(parseFloat(e.target.value))}
+              onChange={handleThresholdChange}
+              onMouseDown={handleThresholdMouseDown}
+              onMouseUp={handleThresholdMouseUp}
+              onTouchStart={handleThresholdMouseDown}
+              onTouchEnd={handleThresholdMouseUp}
               className="threshold-slider"
+              disabled={isRedetecting}
             />
             <div className="threshold-value">
-              Lower = More faces detected (may include false positives)
+              {isRedetecting ? 'Detecting faces...' : 'Adjust and release to recompute faces'}
             </div>
-            <button 
-              onClick={handleRedetect}
-              disabled={isRedetecting}
-              className="redetect-btn"
-            >
-              {isRedetecting ? 'Detecting...' : 'Re-detect Faces'}
-            </button>
           </div>
 
           <div className="current-face">
