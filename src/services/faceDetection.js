@@ -9,7 +9,8 @@ export const loadModels = async () => {
   if (modelsLoaded) return;
   
   try {
-    const MODEL_URL = '/models';
+    // Use relative path that works both locally and on GitHub Pages
+    const MODEL_URL = './models';
     
     await Promise.all([
       faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
