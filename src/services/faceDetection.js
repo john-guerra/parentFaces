@@ -9,8 +9,11 @@ export const loadModels = async () => {
   if (modelsLoaded) return;
   
   try {
-    // Use relative path that works both locally and on GitHub Pages
-    const MODEL_URL = './models';
+    // Use import.meta.env.BASE_URL to get the correct base path for Vite
+    const BASE_URL = import.meta.env.BASE_URL || '/';
+    const MODEL_URL = `${BASE_URL}models`;
+    
+    console.log('Loading models from:', MODEL_URL);
     
     await Promise.all([
       faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
