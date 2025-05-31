@@ -16,12 +16,12 @@ const PairwiseMatrix = ({ allFaces, image }) => {
       return;
     }
 
-    const computeMatrix = async () => {
+    const computeMatrix = () => {
       setLoading(true);
       setError(null);
       
       try {
-        const data = await computePairwiseMatrix(allFaces);
+        const data = computePairwiseMatrix(allFaces);
         setMatrixData(data);
         
         if (data) {

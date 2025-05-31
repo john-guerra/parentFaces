@@ -6,7 +6,7 @@ import PairwiseMatrix from './PairwiseMatrix';
 import './ResemblanceResults.css';
 
 const ResemblanceResults = ({ results, image, onReset, validationData, photoCount = 1 }) => {
-  if (!results || results.length === 0) {
+  if (!results || !Array.isArray(results) || results.length === 0) {
     return (
       <div className="resemblance-results">
         <div className="no-results">
@@ -48,13 +48,18 @@ const ResemblanceResults = ({ results, image, onReset, validationData, photoCoun
       cropX, cropY, cropWidth, cropHeight,
       0, 0, size, size
     );
-    
+
     return canvas.toDataURL();
   };
 
   // Collect all faces for the pairwise matrix
   const getAllFaces = () => {
     const allFaces = [];
+    
+    // Safety check: ensure results is an array
+    if (!Array.isArray(results) || results.length === 0) {
+      return allFaces;
+    }
     
     // Add all parents from the first result (they should be the same across all results)
     if (results.length > 0 && results[0].parentSimilarities) {
@@ -67,7 +72,9 @@ const ResemblanceResults = ({ results, image, onReset, validationData, photoCoun
     
     // Add all children
     results.forEach(result => {
-      allFaces.push(result.childFace);
+      if (result && result.childFace) {
+        allFaces.push(result.childFace);
+      }
     });
     
     return allFaces;
@@ -83,78 +90,84 @@ const ResemblanceResults = ({ results, image, onReset, validationData, photoCoun
       </div>
 
       <div className="results-grid">
-        {results.map((result, index) => (
-          <div key={index} className="child-result">
-            <div className="child-info">
-              <div className="face-preview">
-                <img 
-                  src={renderFaceImage(result.childFace)} 
-                  alt={`Child ${index + 1}`}
-                  className="face-img"
-                />
+        {results.map((result, index) => {
+          // Safely get child index, fallback to array index + 1
+          const childIndex = result.childFace?.childIndex ?? index;
+          const childLabel = `Child ${childIndex + 1}`;
+          
+          return (
+            <div key={index} className="child-result">
+              <div className="child-info">
+                <div className="face-preview">
+                  <img 
+                    src={renderFaceImage(result.childFace)} 
+                    alt={childLabel}
+                    className="face-img"
+                  />
+                </div>
+                <h3>{childLabel}</h3>
               </div>
-              <h3>Child {index + 1}</h3>
-            </div>
 
-            <div className="resemblance-analysis">
-              <div className="best-match">
-                <div className="match-header">
-                  <h4>🏆 Most Similar To:</h4>
-                  <div className="parent-match">
-                    <div className="parent-preview">
-                      <img 
-                        src={renderFaceImage(result.mostSimilarParent)} 
-                        alt="Most similar parent"
-                        className="face-img"
-                      />
-                    </div>
-                    <div className="match-info">
-                      <span className="parent-label">
-                        {result.mostSimilarParent.role === 'parent1' ? 'Parent 1' : 'Parent 2'}
-                      </span>
-                      <div className="similarity-score">
-                        <span className="score">{formatSimilarityScore(result.confidence)}</span>
-                        <span className="description">{getSimilarityDescription(result.confidence)}</span>
+              <div className="resemblance-analysis">
+                <div className="best-match">
+                  <div className="match-header">
+                    <h4>🏆 Most Similar To:</h4>
+                    <div className="parent-match">
+                      <div className="parent-preview">
+                        <img 
+                          src={renderFaceImage(result.mostSimilarParent)} 
+                          alt="Most similar parent"
+                          className="face-img"
+                        />
+                      </div>
+                      <div className="match-info">
+                        <span className="parent-label">
+                          {result.mostSimilarParent.role === 'parent1' ? 'Parent 1' : 'Parent 2'}
+                        </span>
+                        <div className="similarity-score">
+                          <span className="score">{formatSimilarityScore(result.confidence)}</span>
+                          <span className="description">{getSimilarityDescription(result.confidence)}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="all-comparisons">
-                <h5>Detailed Comparison:</h5>
-                <div className="comparison-list">
-                  {result.parentSimilarities
-                    .sort((a, b) => b.similarity - a.similarity)
-                    .map((comparison, idx) => (
-                      <div key={idx} className="comparison-item">
-                        <div className="comparison-parent">
-                          <img 
-                            src={renderFaceImage(comparison.parent, 40)} 
-                            alt={`Parent ${comparison.parent.role === 'parent1' ? '1' : '2'}`}
-                            className="small-face-img"
-                          />
-                          <span>{comparison.parent.role === 'parent1' ? 'Parent 1' : 'Parent 2'}</span>
-                        </div>
-                        <div className="comparison-score">
-                          <div className="score-bar">
-                            <div 
-                              className="score-fill"
-                              style={{ width: `${comparison.similarity * 100}%` }}
+                <div className="all-comparisons">
+                  <h5>Detailed Comparison:</h5>
+                  <div className="comparison-list">
+                    {result.parentSimilarities
+                      .sort((a, b) => b.similarity - a.similarity)
+                      .map((comparison, idx) => (
+                        <div key={idx} className="comparison-item">
+                          <div className="comparison-parent">
+                            <img 
+                              src={renderFaceImage(comparison.parent, 40)} 
+                              alt={`Parent ${comparison.parent.role === 'parent1' ? '1' : '2'}`}
+                              className="small-face-img"
                             />
+                            <span>{comparison.parent.role === 'parent1' ? 'Parent 1' : 'Parent 2'}</span>
                           </div>
-                          <div className="score-details">
-                            <span className="percentage">{formatSimilarityScore(comparison.similarity)}</span>
-                            <span className="decimal">({comparison.similarity.toFixed(3)})</span>
+                          <div className="comparison-score">
+                            <div className="score-bar">
+                              <div 
+                                className="score-fill"
+                                style={{ width: `${comparison.similarity * 100}%` }}
+                              />
+                            </div>
+                            <div className="score-details">
+                              <span className="percentage">{formatSimilarityScore(comparison.similarity)}</span>
+                              <span className="decimal">({comparison.similarity.toFixed(3)})</span>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       <div className="results-actions">
@@ -196,12 +209,12 @@ const ResemblanceResults = ({ results, image, onReset, validationData, photoCoun
             <ul>
               <li><strong>Face Detection:</strong> We identify and locate faces in your photo using face-api.js neural networks</li>
               <li><strong>Feature Extraction:</strong> Each face is converted into a 128-dimensional numerical vector (descriptor) that captures unique facial characteristics like eye shape, nose structure, jawline, and overall facial geometry</li>
-              <li><strong>Similarity Comparison:</strong> We use cosine similarity calculation in high-dimensional space to measure how similar two faces are:
+              <li><strong>Similarity Comparison:</strong> We use Euclidean distance measurement (recommended by face-api.js) to compare faces:
                 <ul className="sub-list">
-                  <li>Calculate the cosine of the angle between two 128-dimensional face vectors</li>
-                  <li>Formula: cosine = (A·B) / (||A|| × ||B||) where A·B is dot product and ||A|| is vector magnitude</li>
-                  <li>Convert cosine similarity (-1 to 1) to percentage: similarity = (cosine + 1) / 2</li>
-                  <li>Cosine similarity is more robust to lighting variations than Euclidean distance</li>
+                  <li>Calculate Euclidean distance between 128-dimensional face descriptors</li>
+                  <li>Distance &lt; 0.6 indicates likely match (same person or close family)</li>
+                  <li>Convert distance to similarity percentage using sophisticated mapping</li>
+                  <li>Euclidean distance is the standard method for face recognition systems</li>
                 </ul>
               </li>
               <li><strong>Confidence Scoring:</strong> Results are ranked by similarity percentage, with the highest-scoring parent identified as the best match</li>
@@ -209,11 +222,11 @@ const ResemblanceResults = ({ results, image, onReset, validationData, photoCoun
             </ul>
             <div className="technical-details">
               <h4>Technical Details:</h4>
-              <p><strong>Algorithm:</strong> Cosine similarity in 128-dimensional feature space</p>
+              <p><strong>Algorithm:</strong> Euclidean distance in 128-dimensional feature space</p>
               <p><strong>Models:</strong> Pre-trained face-api.js neural networks for feature extraction</p>
               <p><strong>Similarity Range:</strong> 0% (no resemblance) to 100% (identical features)</p>
-              <p><strong>Typical Family Scores:</strong> 35-75% similarity between related family members</p>
-              <p><strong>Advantage:</strong> Cosine similarity is more robust to lighting and normalization differences</p>
+              <p><strong>Typical Family Scores:</strong> 40-80% similarity between related family members</p>
+              <p><strong>Advantage:</strong> Euclidean distance is the industry standard for face recognition</p>
             </div>
             <p className="disclaimer">
               <em>Note: This is for entertainment purposes. Actual genetic resemblance involves many factors not captured in photos, including 3D facial structure, expressions, aging, and non-visible genetic traits.</em>

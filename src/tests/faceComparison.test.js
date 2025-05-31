@@ -117,8 +117,8 @@ runner.test('Face descriptors - different faces should have lower similarity', a
 
   const result = await comparefaces(face1, face2);
   
-  // Should be lower similarity (< 0.5 for different faces)
-  assertBetween(result.faceApiSimilarity, 0.0, 0.5);
+  // Should be lower similarity (< 0.5 for different faces) with Euclidean method
+  assertBetween(result.euclideanSimilarity, 0.0, 0.5);
   assertBetween(result.combinedScore, 0.0, 0.5);
 });
 
@@ -138,8 +138,8 @@ runner.test('Face descriptors - identical faces should return 100% similarity', 
 
   const result = await comparefaces(face1, face2);
   
-  // Should be exactly 1.0 (100% similarity)
-  assertEqual(result.faceApiSimilarity, 1.0, 0.001);
+  // Should be exactly 1.0 (100% similarity) with Euclidean method
+  assertEqual(result.euclideanSimilarity, 1.0, 0.001);
   assertEqual(result.combinedScore, 1.0, 0.001);
 });
 

@@ -85,77 +85,113 @@ export const cosineSimilarity = (vecA, vecB) => {
 };
 
 /**
- * Compare faces using face-api.js descriptors
- * Enhanced version with improved consistency and error handling
- * @param {Object} face1 - First face object with descriptor and box
- * @param {Object} face2 - Second face object with descriptor and box
+ * Calculate Euclidean distance between two face descriptors
+ * @param {Array|Float32Array} desc1 - First descriptor
+ * @param {Array|Float32Array} desc2 - Second descriptor
+ * @returns {number} Euclidean distance
+ */
+export const euclideanDistance = (desc1, desc2) => {
+  if (desc1.length !== desc2.length) {
+    throw new Error('Descriptors must have the same length');
+  }
+  
+  let sum = 0;
+  for (let i = 0; i < desc1.length; i++) {
+    const diff = desc1[i] - desc2[i];
+    sum += diff * diff;
+  }
+  
+  return Math.sqrt(sum);
+};
+
+/**
+ * Compare faces using face-api.js descriptors with Euclidean distance
+ * Based on face-api.js documentation recommendations
+ * @param {Object|Array} face1 - First face object with descriptor and box, or descriptor array
+ * @param {Object|Array} face2 - Second face object with descriptor and box, or descriptor array
  * @returns {Object} Similarity metrics
  */
-export const comparefaces = async (face1, face2) => {
+export const comparefaces = (face1, face2) => {
   const results = {
-    faceApiSimilarity: 0,
+    euclideanDistance: 0,
     euclideanSimilarity: 0,
-    combinedScore: 0
+    cosineSimilarity: 0,
+    combinedScore: 0,
+    isMatch: false
   };
   
-  // Enhanced validation
-  if (!face1 || !face2) {
-    console.warn('comparefaces: One or both faces are null/undefined');
+  // Handle both face objects and plain descriptor arrays
+  let desc1, desc2;
+  
+  if (Array.isArray(face1) || face1 instanceof Float32Array) {
+    desc1 = face1;
+  } else if (face1 && face1.descriptor) {
+    desc1 = face1.descriptor;
+  } else {
+    console.warn('comparefaces: face1 is invalid or missing descriptor');
     return results;
   }
   
-  if (!face1.descriptor || !face2.descriptor) {
-    console.warn('comparefaces: One or both faces missing descriptors');
+  if (Array.isArray(face2) || face2 instanceof Float32Array) {
+    desc2 = face2;
+  } else if (face2 && face2.descriptor) {
+    desc2 = face2.descriptor;
+  } else {
+    console.warn('comparefaces: face2 is invalid or missing descriptor');
     return results;
   }
   
-  if (face1.descriptor.length !== face2.descriptor.length) {
-    console.warn('comparefaces: Descriptor length mismatch');
+  if (!desc1 || !desc2 || desc1.length !== desc2.length) {
+    console.warn('comparefaces: Descriptor validation failed', {
+      desc1Length: desc1?.length,
+      desc2Length: desc2?.length
+    });
     return results;
   }
   
   try {
-    // Face-api.js descriptor similarity with enhanced consistency
-    const desc1 = Array.from(face1.descriptor);
-    const desc2 = Array.from(face2.descriptor);
+    const arr1 = Array.from(desc1);
+    const arr2 = Array.from(desc2);
     
-    // Calculate cosine similarity between descriptors
-    const cosineScore = cosineSimilarity(desc1, desc2);
+    // 1. Calculate Euclidean distance (face-api.js recommended method)
+    const distance = euclideanDistance(arr1, arr2);
+    results.euclideanDistance = distance;
     
-    // Enhanced mapping with better numerical stability
-    let normalizedScore;
-    if (cosineScore >= 0) {
-      // Positive cosine similarity: direct mapping
-      normalizedScore = cosineScore;
+    // 2. face-api.js recommends threshold of 0.6 for matching
+    // Distance < 0.6 = likely same person
+    // Distance > 0.6 = likely different people
+    results.isMatch = distance < 0.6;
+    
+    // 3. Convert distance to similarity score (0-1 range)
+    // Use a more sophisticated mapping based on typical face recognition distances
+    if (distance <= 0.4) {
+      // Very high similarity for very close faces
+      results.euclideanSimilarity = 1.0 - (distance / 0.4) * 0.15; // 0.85-1.0 range
+    } else if (distance <= 0.6) {
+      // Good similarity for distances in the "match" range
+      results.euclideanSimilarity = 0.6 + ((0.6 - distance) / 0.2) * 0.25; // 0.6-0.85 range
+    } else if (distance <= 1.0) {
+      // Moderate similarity for higher distances
+      results.euclideanSimilarity = 0.3 + ((1.0 - distance) / 0.4) * 0.3; // 0.3-0.6 range
     } else {
-      // Negative cosine similarity: map to very low similarity
-      normalizedScore = Math.max(0, 0.05 + (cosineScore * 0.05));
+      // Low similarity for very high distances
+      results.euclideanSimilarity = Math.max(0, 0.3 - ((distance - 1.0) / 0.5) * 0.3); // 0.0-0.3 range
     }
     
-    // Ensure the result is within [0, 1] range with proper clamping
-    results.faceApiSimilarity = Math.max(0, Math.min(1, normalizedScore));
+    // 4. Also calculate cosine similarity for comparison
+    results.cosineSimilarity = cosineSimilarity(arr1, arr2);
     
-    // Also calculate Euclidean distance for comparison
-    let distance = 0;
-    for (let i = 0; i < desc1.length; i++) {
-      const diff = desc1[i] - desc2[i];
-      distance += diff * diff;
-    }
-    distance = Math.sqrt(distance);
-    
-    // For face descriptors, typical distances range from 0 to ~1.2
-    // Map this to similarity score (lower distance = higher similarity)
-    results.euclideanSimilarity = Math.max(0, Math.min(1, 1 - (distance / 1.2)));
-    
-    // Use cosine similarity as the primary score (it's more robust for face recognition)
-    results.combinedScore = results.faceApiSimilarity;
+    // 5. Use Euclidean-based similarity as the primary score
+    results.combinedScore = results.euclideanSimilarity;
     
   } catch (error) {
     console.error('Error in comparefaces:', error);
     // Return zero similarity on error rather than throwing
-    results.faceApiSimilarity = 0;
+    results.euclideanDistance = Infinity;
     results.euclideanSimilarity = 0;
+    results.cosineSimilarity = 0;
     results.combinedScore = 0;
+    results.isMatch = false;
   }
   
   return results;
@@ -167,26 +203,44 @@ export const comparefaces = async (face1, face2) => {
  * @param {Array} children - Array of child face objects
  * @returns {Array} Resemblance analysis for each child
  */
-export const analyzeFamilyResemblance = async (parents, children) => {
+export const analyzeFamilyResemblance = (parents, children) => {
+  console.log('analyzeFamilyResemblance called with:', { parents, children });
+  
+  // Validate inputs
+  if (!Array.isArray(parents) || !Array.isArray(children)) {
+    console.error('analyzeFamilyResemblance: Invalid input - parents or children is not an array', { 
+      parents: parents, 
+      children: children,
+      parentsType: typeof parents,
+      childrenType: typeof children
+    });
+    return [];
+  }
+  
+  if (parents.length === 0 || children.length === 0) {
+    console.warn('analyzeFamilyResemblance: Empty parents or children array');
+    return [];
+  }
+  
   const results = [];
   
-  for (const child of children) {
+  children.forEach((child, childIndex) => {
     const childResult = {
-      childFace: child,
+      childFace: { ...child, childIndex }, // Add childIndex to the face object
       parentSimilarities: [],
       mostSimilarParent: null,
       confidence: 0
     };
     
     // Compare child with each parent
-    for (const parent of parents) {
-      const similarity = await comparefaces(child, parent);
+    parents.forEach(parent => {
+      const similarity = comparefaces(child, parent);
       childResult.parentSimilarities.push({
         parent: parent,
         similarity: similarity.combinedScore,
         details: similarity
       });
-    }
+    });
     
     // Find the most similar parent
     if (childResult.parentSimilarities.length > 0) {
@@ -199,8 +253,9 @@ export const analyzeFamilyResemblance = async (parents, children) => {
     }
     
     results.push(childResult);
-  }
+  });
   
+  console.log('analyzeFamilyResemblance returning:', results);
   return results;
 };
 

@@ -5,7 +5,7 @@ import { comparefaces } from './faceComparison.js';
  * @param {Array} allFaces - Array of all face objects (parents + children)
  * @returns {Object} Matrix data and face information
  */
-export const computePairwiseMatrix = async (allFaces) => {
+export const computePairwiseMatrix = (allFaces) => {
   if (!allFaces || allFaces.length < 2) {
     return null;
   }
@@ -18,7 +18,7 @@ export const computePairwiseMatrix = async (allFaces) => {
   for (let i = 0; i < faceCount; i++) {
     for (let j = i + 1; j < faceCount; j++) {
       try {
-        const result = await comparefaces(allFaces[i], allFaces[j]);
+        const result = comparefaces(allFaces[i], allFaces[j]);
         const similarity = result.combinedScore;
         
         // Store in matrix (symmetric)
