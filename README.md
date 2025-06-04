@@ -217,6 +217,13 @@ npm run build
 4. Ensure all tests pass
 5. Submit a pull request
 
+## 📋 Documentation
+
+- **[Product Requirements Document (PRD)](PRD.md)** - Comprehensive technical and functional requirements
+- **[Development Guidelines](DEVELOPMENT_GUIDELINES.md)** - Best practices for coding and contributing
+- **[Changelog](CHANGELOG.md)** - Version history and updates
+- **[Fixes Completed](FIXES_COMPLETED.md)** - Technical fixes and improvements
+
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
